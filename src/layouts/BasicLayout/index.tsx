@@ -9,6 +9,8 @@ import Image from "next/image";
 import GlobalFooter from "@/components/GlobalFooter";
 import './index.css'
 import menu from "../../../config/menu";
+import {useSelector} from "react-redux";
+import {RootState} from "@/stores";
 
 const SearchInput = () => {
     const {token} = theme.useToken();
@@ -51,6 +53,8 @@ interface Props {
 }
 
 export default function BasicLayout({children}: Props) {
+    const loginUser = useSelector((state: RootState) => state.loginUser);
+
     {
         const pathname = usePathname();
         return (
@@ -88,9 +92,9 @@ export default function BasicLayout({children}: Props) {
                             collapsedShowGroupTitle: true,
                         }}
                         avatarProps={{
-                            src: "https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg",
+                            src: loginUser.userAvatar || "/assets/images/noLogin.jpg",
                             size: "small",
-                            title: "未登录",
+                            title: loginUser.userName || "未登录",
                             render: (props, dom) => {
                                 return (
                                     <Dropdown
