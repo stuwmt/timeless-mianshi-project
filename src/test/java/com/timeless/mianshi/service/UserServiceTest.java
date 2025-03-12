@@ -1,10 +1,10 @@
 package com.timeless.mianshi.service;
 
-import javax.annotation.Resource;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
 
 /**
  * 用户服务测试
@@ -29,5 +29,11 @@ public class UserServiceTest {
         } catch (Exception e) {
 
         }
+    }
+
+    @Test
+    void addUserSign() {
+        boolean b = userService.addUserSign(123);
+        Assertions.assertTrue(b);
     }
 }

@@ -10,22 +10,11 @@ import com.timeless.mianshi.config.WxOpenConfig;
 import com.timeless.mianshi.constant.UserConstant;
 import com.timeless.mianshi.exception.BusinessException;
 import com.timeless.mianshi.exception.ThrowUtils;
-import com.timeless.mianshi.model.dto.user.UserAddRequest;
-import com.timeless.mianshi.model.dto.user.UserLoginRequest;
-import com.timeless.mianshi.model.dto.user.UserQueryRequest;
-import com.timeless.mianshi.model.dto.user.UserRegisterRequest;
-import com.timeless.mianshi.model.dto.user.UserUpdateMyRequest;
-import com.timeless.mianshi.model.dto.user.UserUpdateRequest;
+import com.timeless.mianshi.model.dto.user.*;
 import com.timeless.mianshi.model.entity.User;
 import com.timeless.mianshi.model.vo.LoginUserVO;
 import com.timeless.mianshi.model.vo.UserVO;
 import com.timeless.mianshi.service.UserService;
-
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -33,12 +22,14 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 import static com.timeless.mianshi.service.impl.UserServiceImpl.SALT;
 
@@ -314,5 +305,32 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 用户签到
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/add/sign_in")
+    public BaseResponse<Boolean> addUserSign(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.addUserSign(loginUser.getId());
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 获取用户签到记录
+     *
+     * @param year    年份
+     * @param request 请求
+     * @return 签到记录
+     */
+    @GetMapping("/get/sign_in")
+    public BaseResponse<Map<LocalDate, Boolean>> getUserSignRecord(Integer year, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        Map<LocalDate, Boolean> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
+        return ResultUtils.success(userSignInRecord);
     }
 }

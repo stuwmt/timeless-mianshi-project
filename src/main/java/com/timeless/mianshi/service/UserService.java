@@ -6,11 +6,12 @@ import com.timeless.mianshi.model.dto.user.UserQueryRequest;
 import com.timeless.mianshi.model.entity.User;
 import com.timeless.mianshi.model.vo.LoginUserVO;
 import com.timeless.mianshi.model.vo.UserVO;
-
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
+
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 用户服务
@@ -117,4 +118,20 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 用户签到
+     *
+     * @param userId 用户 id
+     * @return 是否签到成功
+     */
+    boolean addUserSign(long userId);
+
+    /**
+     * 获取用户签到记录
+     *
+     * @param userId
+     * @param year
+     * @return
+     */
+    Map<LocalDate, Boolean> getUserSignInRecord(long userId, Integer year);
 }
