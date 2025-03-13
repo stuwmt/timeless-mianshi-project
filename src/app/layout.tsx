@@ -1,6 +1,6 @@
 "use client";
 import {Geist, Geist_Mono} from "next/font/google";
-import "./globals.css";
+import "./index.css";
 import {AntdRegistry} from "@ant-design/nextjs-registry";
 import BasicLayout from "@/layouts/BasicLayout";
 import store, {AppDispatch} from '@/stores'
@@ -8,6 +8,8 @@ import {Provider, useDispatch} from "react-redux";
 import {useCallback, useEffect} from "react";
 import {getLoginUserUsingGet} from "@/api/userController";
 import {setLoginUser} from "@/stores/loginUser";
+import AccessLayout from "@/access/AccessLayout";
+import ACCESS_ENUM from "@/access/accessEnum";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -29,7 +31,6 @@ const InitLayout: React.FC<
     }>
 > = ({children}) => {
     const dispatch = useDispatch<AppDispatch>()
-
     /**
      * 全局初始化函数，有全局单次调用的代码，都可以写到这里
      */
@@ -40,9 +41,15 @@ const InitLayout: React.FC<
     const doInitLoginUser = useCallback(async () => {
         const res = await getLoginUserUsingGet()
         if (res.data) {
-
+            dispatch(setLoginUser(res.data));
         } else {
-
+            setTimeout(() => {
+                const testUser = {
+                    userName: "测试登录", id: 1,
+                    userRole: ACCESS_ENUM.ADMIN
+                };
+                dispatch(setLoginUser(testUser));
+            }, 3000);
         }
     }, [])
 
@@ -68,10 +75,11 @@ export default function RootLayout({
             <Provider store={store}>
                 <InitLayout>
                     <BasicLayout>
-                        {children}
+                        <AccessLayout>
+                            {children}
+                        </AccessLayout>
                     </BasicLayout>
                 </InitLayout>
-
             </Provider>
         </AntdRegistry>
         </body>

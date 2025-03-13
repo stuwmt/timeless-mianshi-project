@@ -11,7 +11,7 @@ export default function GlobalFooter() {
         return (
             <div className="global-footer">
                 <div>© {currentYear} 面试刷题平台</div>
-                <div>by 风若尘</div>
+                <div>by 星如雨</div>
             </div>
         );
     }

@@ -4,13 +4,16 @@ import {ProConfigProvider, ProLayout} from "@ant-design/pro-components";
 import {Dropdown, Input, theme} from "antd";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import React from "react";
+import React, {useState} from "react";
 import Image from "next/image";
 import GlobalFooter from "@/components/GlobalFooter";
 import './index.css'
-import menu from "../../../config/menu";
+import {menus} from "../../../config/menu";
 import {useSelector} from "react-redux";
 import {RootState} from "@/stores";
+import getMenuAccessibleMenus from "@/access/menuAccess";
+import MdEditor from "@/components/MdEditor";
+import MdViewer from "@/components/MdViewer";
 
 const SearchInput = () => {
     const {token} = theme.useToken();
@@ -53,8 +56,8 @@ interface Props {
 }
 
 export default function BasicLayout({children}: Props) {
+    const [text, setText] = useState<string>('');
     const loginUser = useSelector((state: RootState) => state.loginUser);
-
     {
         const pathname = usePathname();
         return (
@@ -141,7 +144,7 @@ export default function BasicLayout({children}: Props) {
                         onMenuHeaderClick={(e) => console.log(e)}
                         //定义哪些页面需要展示
                         menuDataRender={() =>
-                            menu}
+                            getMenuAccessibleMenus(loginUser, menus)}
                         // 菜单渲染
                         menuItemRender={(item, dom) => (
                             <Link href={item.path || "/"} target={item.target}>
@@ -149,6 +152,8 @@ export default function BasicLayout({children}: Props) {
                             </Link>
                         )}
                     >
+                        <MdEditor value={text} onChange={setText}/>
+                        <MdViewer value={text}/>
                         {children}
                     </ProLayout>
                 </ProConfigProvider>
