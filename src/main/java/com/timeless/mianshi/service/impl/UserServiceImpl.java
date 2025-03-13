@@ -28,10 +28,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.timeless.mianshi.constant.UserConstant.USER_LOGIN_STATE;
@@ -305,22 +302,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     @Override
-    public Map<LocalDate, Boolean> getUserSignInRecord(long userId, Integer year) {
+    public List<Integer> getUserSignInRecord(long userId, Integer year) {
         if (null == year) {
             year = LocalDate.now().getYear();
         }
         String key = RedisConstant.getUserSignInRedisKey(year, userId);
-        RBitSet bitSet = redissonClient.getBitSet(key);
-        Map<LocalDate, Boolean> result = new LinkedHashMap<>();
-        // 获取总天数
-        int totalDays = Year.of(year).length();
-        for (int dayOfYear = 1; dayOfYear < totalDays; dayOfYear++) {
-            // 获取当前时期
-            LocalDate currentDate = LocalDate.ofYearDay(year, dayOfYear);
-            // 是否签到
-            boolean isSign = bitSet.get(dayOfYear);
-            result.put(currentDate, isSign);
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        // 加载bitSet到内存中
+        BitSet bitSet = signInBitSet.asBitSet();
+        List<Integer> dayList = new ArrayList<>();
+        // 从索引0开始寻找下一个被设置为1的位
+        int index = bitSet.nextSetBit(0);
+        while (index >= 0) {
+            dayList.add(index);
+            index = bitSet.nextSetBit(index + 1);
         }
-        return result;
+        return dayList;
     }
 }

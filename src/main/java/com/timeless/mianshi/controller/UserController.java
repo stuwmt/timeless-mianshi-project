@@ -27,9 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 import static com.timeless.mianshi.service.impl.UserServiceImpl.SALT;
 
@@ -328,9 +326,9 @@ public class UserController {
      * @return 签到记录
      */
     @GetMapping("/get/sign_in")
-    public BaseResponse<Map<LocalDate, Boolean>> getUserSignRecord(Integer year, HttpServletRequest request) {
+    public BaseResponse<List<Integer> > getUserSignRecord(Integer year, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        Map<LocalDate, Boolean> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
+        List<Integer> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
         return ResultUtils.success(userSignInRecord);
     }
 }
