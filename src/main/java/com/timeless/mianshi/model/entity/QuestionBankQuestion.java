@@ -11,15 +11,16 @@ import java.util.Date;
 
 /**
  * 题库题目
+ *
  * @TableName question_bank_question
  */
-@TableName(value ="question_bank_question")
+@TableName(value = "question_bank_question")
 @Data
 public class QuestionBankQuestion implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
