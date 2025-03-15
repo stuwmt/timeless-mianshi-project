@@ -158,8 +158,8 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         // 对象列表 => 封装对象列表
         List<QuestionBankQuestionVO> questionBankQuestionVOList =
                 questionBankQuestionList.stream().map(questionBankQuestion -> {
-            return QuestionBankQuestionVO.objToVo(questionBankQuestion);
-        }).collect(Collectors.toList());
+                    return QuestionBankQuestionVO.objToVo(questionBankQuestion);
+                }).collect(Collectors.toList());
 
         // todo 可以根据需要为封装对象补充值，不需要的内容可以删除
         // region 可选
@@ -305,12 +305,11 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
             // 构造查询
             LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper =
                     Wrappers.lambdaQuery(QuestionBankQuestion.class)
-                    .eq(QuestionBankQuestion::getQuestionId, questionId)
-                    .eq(QuestionBankQuestion::getQuestionBankId, questionBankId);
+                            .eq(QuestionBankQuestion::getQuestionId, questionId)
+                            .eq(QuestionBankQuestion::getQuestionBankId, questionBankId);
             boolean result = this.remove(lambdaQueryWrapper);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "从题库移除题目失败");
         }
     }
-
 
 }

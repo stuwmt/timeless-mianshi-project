@@ -2,6 +2,7 @@ package com.timeless.mianshi.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.timeless.mianshi.annotation.AuthCheck;
 import com.timeless.mianshi.common.BaseResponse;
 import com.timeless.mianshi.common.DeleteRequest;
@@ -136,11 +137,21 @@ public class QuestionController {
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        String key = "question_detail_" + id;
+        // 从缓存获取
+        if (JdHotKeyStore.isHotKey(key)) {
+            QuestionVO questionVO = (QuestionVO) JdHotKeyStore.get(key);
+            if (questionVO != null) {
+                return ResultUtils.success(questionVO);
+            }
+        }
         // 查询数据库
         Question question = questionService.getById(id);
         ThrowUtils.throwIf(question == null, ErrorCode.NOT_FOUND_ERROR);
         // 获取封装类
-        return ResultUtils.success(questionService.getQuestionVO(question, request));
+        QuestionVO questionVO = questionService.getQuestionVO(question, request);
+        JdHotKeyStore.smartSet(key, questionVO);
+        return ResultUtils.success(questionVO);
     }
 
 

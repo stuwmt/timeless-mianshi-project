@@ -11,6 +11,7 @@ import com.timeless.mianshi.constant.UserConstant;
 import com.timeless.mianshi.exception.ThrowUtils;
 import com.timeless.mianshi.model.dto.qbq.QuestionBankQuestionAddRequest;
 import com.timeless.mianshi.model.dto.qbq.QuestionBankQuestionRemoveRequest;
+import com.timeless.mianshi.model.dto.question.QuestionBatchDeleteRequest;
 import com.timeless.mianshi.model.dto.questionbank.QuestionBankQuestionBatchAddRequest;
 import com.timeless.mianshi.model.dto.questionbank.QuestionBankQuestionBatchRemoveRequest;
 import com.timeless.mianshi.model.dto.questionbank.QuestionBankQuestionQueryRequest;
@@ -18,6 +19,7 @@ import com.timeless.mianshi.model.entity.QuestionBankQuestion;
 import com.timeless.mianshi.model.entity.User;
 import com.timeless.mianshi.model.vo.QuestionBankQuestionVO;
 import com.timeless.mianshi.service.QuestionBankQuestionService;
+import com.timeless.mianshi.service.QuestionService;
 import com.timeless.mianshi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +42,8 @@ public class QuestionBankQuestionController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private QuestionService questionService;
 
     // region 增删改查
 
@@ -108,7 +112,8 @@ public class QuestionBankQuestionController {
         QuestionBankQuestion questionBankQuestion = questionBankQuestionService.getById(id);
         ThrowUtils.throwIf(questionBankQuestion == null, ErrorCode.NOT_FOUND_ERROR);
         // 获取封装类
-        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVO(questionBankQuestion, request));
+        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVO(questionBankQuestion,
+                request));
     }
 
     /**
@@ -123,7 +128,8 @@ public class QuestionBankQuestionController {
         long current = questionBankQuestionQueryRequest.getCurrent();
         long size = questionBankQuestionQueryRequest.getPageSize();
         // 查询数据库
-        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current, size),
+        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current,
+                        size),
                 questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));
         return ResultUtils.success(questionBankQuestionPage);
     }
@@ -143,10 +149,12 @@ public class QuestionBankQuestionController {
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 查询数据库
-        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current, size),
+        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current,
+                        size),
                 questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));
         // 获取封装类
-        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage, request));
+        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage
+                , request));
     }
 
     /**
@@ -168,14 +176,15 @@ public class QuestionBankQuestionController {
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 查询数据库
-        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current, size),
+        Page<QuestionBankQuestion> questionBankQuestionPage = questionBankQuestionService.page(new Page<>(current,
+                        size),
                 questionBankQuestionService.getQueryWrapper(questionBankQuestionQueryRequest));
         // 获取封装类
-        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage, request));
+        return ResultUtils.success(questionBankQuestionService.getQuestionBankQuestionVOPage(questionBankQuestionPage
+                , request));
     }
 
     // endregion
-
 
 
     /**
@@ -242,4 +251,15 @@ public class QuestionBankQuestionController {
         questionBankQuestionService.batchRemoveQuestionsFromBank(questionIdList, questionBankId);
         return ResultUtils.success(true);
     }
+
+
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
+        return ResultUtils.success(true);
+    }
+
 }
