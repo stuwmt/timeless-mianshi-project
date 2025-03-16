@@ -1,5 +1,8 @@
 package com.timeless.mianshi.controller;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
+import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
 import com.timeless.mianshi.annotation.AuthCheck;
@@ -152,7 +155,7 @@ public class QuestionBankController {
         if (JdHotKeyStore.isHotKey(key)) {
             // 从本地缓存中取值
             QuestionBankVO questionBankVO = (QuestionBankVO) JdHotKeyStore.get(key);
-            if (questionBankVO!=null){
+            if (questionBankVO != null) {
                 return ResultUtils.success(questionBankVO);
             }
         }
@@ -199,6 +202,8 @@ public class QuestionBankController {
      * @return
      */
     @PostMapping("/list/page/vo")
+    @SentinelResource(value = "listQuestionBankVOByPage", blockHandler = "handleBlockException",
+            fallback = "handleFallBack")
     public BaseResponse<Page<QuestionBankVO>> listQuestionBankVOByPage(@RequestBody QuestionBankQueryRequest questionBankQueryRequest,
                                                                        HttpServletRequest request) {
         long current = questionBankQueryRequest.getCurrent();
@@ -210,6 +215,32 @@ public class QuestionBankController {
                 questionBankService.getQueryWrapper(questionBankQueryRequest));
         // 获取封装类
         return ResultUtils.success(questionBankService.getQuestionBankVOPage(questionBankPage, request));
+    }
+
+    /**
+     * 处理限流
+     *
+     * @param questionBankQueryRequest
+     * @param request
+     * @return
+     */
+    public BaseResponse<Page<QuestionBankVO>> handleBlockException(@RequestBody QuestionBankQueryRequest questionBankQueryRequest, HttpServletRequest request, BlockException ex) {
+        // 降级操作
+        if (ex instanceof DegradeException) {
+            return handleFallBack(questionBankQueryRequest, request, ex);
+        }
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统压力过大，请耐心等待");
+    }
+
+    /**
+     * 处理降级
+     *
+     * @param questionBankQueryRequest
+     * @param request
+     * @return
+     */
+    public BaseResponse<Page<QuestionBankVO>> handleFallBack(@RequestBody QuestionBankQueryRequest questionBankQueryRequest, HttpServletRequest request, Throwable ex) {
+        return ResultUtils.success(null);
     }
 
     /**
