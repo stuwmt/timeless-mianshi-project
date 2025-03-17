@@ -25,7 +25,6 @@ spring:
         # Druid 配置
         druid:
             # 配置初始化大小、最小、最大
-            initial-size: 10
             minIdle: 10
             max-active: 10
             # 配置获取连接等待超时的时间(单位：毫秒)
@@ -171,3 +170,28 @@ hotkey:
     appName: mianshi
     caffeine-size: 10000
     push-period: 1000
+nacos:
+    config:
+        server-addr: 127.0.0.1:8848
+        bootstrap:
+            enable: true # 是否开启naocs配置中心
+        data-id: mianshi
+        group: DEFAULT_GROUP
+        type: yaml
+        auto-refresh: true
+# Sa-Token 配置
+sa-token:
+    # token 名称（同时也是 cookie 名称）
+    token-name: mianshi
+    # token 有效期（单位：秒） 默认30天，-1 代表永久有效
+    timeout: 2592000
+    # token 最低活跃频率（单位：秒），如果 token 超过此时间没有访问系统就会被冻结，默认-1 代表不限制，永不冻结
+    active-timeout: -1
+    # 是否允许同一账号多地同时登录（为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
+    is-concurrent: false
+    # 在多人登录同一账号时，是否共用一个 token （为 true 时所有登录共用一个 token, 为 false 时每次登录新建一个 token）
+    is-share: true
+    # token 风格（默认可取值：uuid、simple-uuid、random-32、random-64、random-128、tik）
+    token-style: uuid
+    # 是否输出操作日志
+    is-log: true
