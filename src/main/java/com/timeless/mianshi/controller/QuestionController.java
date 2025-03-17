@@ -1,6 +1,7 @@
 package com.timeless.mianshi.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -16,6 +17,7 @@ import com.timeless.mianshi.common.ResultUtils;
 import com.timeless.mianshi.constant.UserConstant;
 import com.timeless.mianshi.exception.BusinessException;
 import com.timeless.mianshi.exception.ThrowUtils;
+import com.timeless.mianshi.manager.CounterManager;
 import com.timeless.mianshi.model.dto.question.QuestionAddRequest;
 import com.timeless.mianshi.model.dto.question.QuestionEditRequest;
 import com.timeless.mianshi.model.dto.question.QuestionQueryRequest;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 题目接口
@@ -142,6 +145,9 @@ public class QuestionController {
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        // 检测和限制爬虫
+        long loginUserId = userService.getLoginUser(request).getId();
+        crawlerDetect(loginUserId);
         String key = "question_detail_" + id;
         // 从缓存获取
         if (JdHotKeyStore.isHotKey(key)) {
@@ -157,6 +163,42 @@ public class QuestionController {
         QuestionVO questionVO = questionService.getQuestionVO(question, request);
         JdHotKeyStore.smartSet(key, questionVO);
         return ResultUtils.success(questionVO);
+    }
+
+
+    @Resource
+    private CounterManager counterManager;
+
+    /**
+     * 检测爬虫
+     *
+     * @param loginUserId
+     */
+    private void crawlerDetect(long loginUserId) {
+        // 调用多少次时告警
+        final int WARN_COUNT = 10;
+        // 超过多少次封号
+        final int BAN_COUNT = 20;
+        // 拼接访问 key
+        String key = String.format("user:access:%s", loginUserId);
+        // 一分钟内访问次数，180 秒过期
+        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
+        // 是否封号
+        if (count > BAN_COUNT) {
+            // 踢下线
+            StpUtil.kickout(loginUserId);
+            // 封号
+            User updateUser = new User();
+            updateUser.setId(loginUserId);
+            updateUser.setUserRole("ban");
+            userService.updateById(updateUser);
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "访问太频繁，已被封号");
+        }
+        // 是否告警
+        if (count == WARN_COUNT) {
+            // 可以改为向管理员发送邮件通知
+            throw new BusinessException(110, "警告访问太频繁");
+        }
     }
 
 
